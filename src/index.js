@@ -5,35 +5,47 @@ const {
   saveFiles,
   addData
 } = require('cozy-konnector-libs')
-const request = requestFactory({ cheerio: true })
+let request = requestFactory()
+const jar = request.jar()
+request = requestFactory({
+  cheerio: true,
+  jar: jar,
+  debug: true
+})
 
-const baseUrl = 'http://books.toscrape.com'
-
+const baseUrl = 'https://www.boulanger.com/'
+const loginUrl = baseUrl + 'webapp/wcs/stores/servlet/BLAuthentication'
+const billsUrl =
+  baseUrl +
+  'webapp/wcs/stores/servlet/BLAccountOrdersHistoryCmd?purchase=allYear&store=store-site'
 
 module.exports = new BaseKonnector(start)
 
 function start(fields) {
-  // The BaseKonnector instance expects a Promise as return of the function
-  return request(`${baseUrl}/index.html`).then($ => {
-    // cheerio (https://cheerio.js.org/) uses the same api as jQuery (http://jquery.com/)
-    // here I do an Array.from to convert the cheerio fake array to a real js array.
-    const entries = Array.from($('article')).map(article =>
-      parseArticle($, article)
-    )
-    return addData(entries, 'com.toscrape.books').then(() =>
-      saveFiles(entries, fields)
-    )
-  })
+  log('info', 'Authenticating ...')
+  return authenticate(fields.email, fields.password).then(getList)
 }
 
-function authenticate(login, password) {
+function getList() {
+  return request({
+    method: 'GET',
+    uri: billsUrl
+  }).then(parseList)
+}
+
+function parseList($) {
+  log('info', 'Parsing bills urls...')
+  console.log(Array.from($('#verifyCredentials')))
+  return 'aa'
+}
+
+function authenticate(email, password) {
   return request({
     method: 'POST',
     uri: loginUrl,
     form: {
-      username: login,
-      password: password
-    },
-
-
+      'email.value': email,
+      'password.value': password
+    }
+  }) // .catch( ?
 }
