@@ -28,7 +28,9 @@
     "deploy": "git-directory-deploy --directory build/ --branch ${DEPLOY_BRANCH:-build} --repo=${DEPLOY_REPOSITORY:-https://$GITHUB_TOKEN@github.com/konnectors/cozy-konnector-template.git}"
   },
   "dependencies": {
-    "cozy-konnector-libs": "3.8.1"
+    "cozy-konnector-libs": "3.8.1",
+    "cheerio": "1.0.0-rc.2",
+    "moment": "2.22.0"
   },
   "devDependencies": {
     "copy-webpack-plugin": "4.5.1",
