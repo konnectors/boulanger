@@ -4,14 +4,15 @@ const {
   BaseKonnector,
   requestFactory,
   log,
+  errors,
   saveBills
 } = require('cozy-konnector-libs')
 let request = requestFactory()
 const jar = request.jar()
 request = requestFactory({
+  //debug: true,
   cheerio: true,
   jar: jar
-  //debug: true
 })
 
 const baseUrl = 'https://www.boulanger.com/webapp/wcs/stores/servlet/'
@@ -85,5 +86,19 @@ function authenticate(email, password) {
       rememberMe: true,
       reLogonURL: 'BLAuthenticationView&storeId=10001' // Needed for getting WP_PERSISTENT cookie
     }
-  }) // .catch(err => {})   ?
+  }).catch(err => {
+    if (err.statusCode === 500) {
+      if (
+        err.error &&
+        err.error.listeMessages &&
+        err.error.listeMessages.length &&
+        err.error.listeMessages[0].contenu
+      ) {
+        log('error', err.error.listeMessages[0].contenu)
+      }
+      throw new Error(errors.LOGIN_FAILED)
+    } else {
+      throw err
+    }
+  })
 }
