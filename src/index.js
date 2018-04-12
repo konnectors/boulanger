@@ -1,3 +1,5 @@
+const moment = require('moment')
+moment.locale('fr')
 const {
   BaseKonnector,
   requestFactory,
@@ -28,7 +30,12 @@ function start(fields) {
   return authenticate(fields.email, fields.password)
     .then(getList)
     .then(entries => {
-      return saveFiles(entries, fields)
+      return saveBills(entries, fields, {
+        timeout: Date.now() + 60 * 1000,
+        identifiers: ['boulanger'],
+        dateDelta: 12,
+        amountDelta: 5
+      })
     })
 }
 
@@ -58,9 +65,9 @@ function parseList($) {
         .match('=(.+?)$')[1]
       return {
         fileurl: link,
-        filename: number + '.pdf',
+        filename: number + '.pdf', //TODO file name ?
         vendor: 'Boulanger',
-        date: datas[index * 2],
+        date: moment(datas[index * 2], 'LL').toDate(),
         amount: datas[index * 2 + 1],
         requestOptions: {
           jar: jar // Cookie WP_PERSITENT (long version) mandatory
