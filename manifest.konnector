@@ -4,7 +4,7 @@
   "type": "io.cozy.bills",
   "slug": "boulanger",
   "description": "Konnector for the retailer Boulanger",
-  "source": "git://github.com/konnectors/cozy-konnector-boulanger.git",
+  "source": "git://github.com/konnectors/boulanger.git",
   "locales": {
     "fr": {
       "permissions": {
