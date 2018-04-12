@@ -1,4 +1,4 @@
-[Cozy][cozy] <YOUR SUPER NEW KONNECTOR NAME>
+[Cozy][cozy] cozy-konnector-boulanger
 =======================================
 
 What's Cozy?
@@ -11,7 +11,7 @@ What's Cozy?
 What's this new konnector?
 --------------------------
 
-<YOUR DESCRIPTION HERE>
+This connector download your bills (in store and online) from your Boulanger account from https://wwww.boulanger.com
 
 ### Open a Pull-Request
 
@@ -39,7 +39,7 @@ You can reach the Cozy Community by:
 License
 -------
 
-<YOUR KONNECTOR NAME> is developed by <your name> and distributed under the [AGPL v3 license][agpl-3.0].
+cozy-konnector-boulanger is developed by CozyCloud and distributed under the [AGPL v3 license][agpl-3.0].
 
 [cozy]: https://cozy.io "Cozy Cloud"
 [agpl-3.0]: https://www.gnu.org/licenses/agpl-3.0.html

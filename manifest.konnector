@@ -1,18 +1,15 @@
 {
   "version": "1.0.0",
-  "name": "konnector name",
-  "type": "node",
-  "slug": "konnectorslug",
-  "description": "description",
-  "source": "git://github.com/konnectors/cozy-konnector-thename.git",
+  "name": "Boulanger",
+  "type": "io.cozy.bills",
+  "slug": "boulanger",
+  "description": "Konnector for the retailer Boulanger",
+  "source": "git://github.com/konnectors/cozy-konnector-boulanger.git",
   "locales": {
     "fr": {
       "permissions": {
-        "books": {
-          "description": "Utilisé pour sauvegarder les références de vos livres"
-        },
-        "files": {
-          "description": "Utilisé pour sauvegarder les couvertures de vos livres"
+        "bills": {
+          "description": "Utilisé pour sauvegarder les données de facturation"
         },
         "accounts": {
           "description": "Utilisé pour récupérer les informations de votre compte"
@@ -21,13 +18,9 @@
     }
   },
   "permissions": {
-    "books": {
-      "description": "Required to save books' references",
-      "type": "io.cozy.books"
-    },
-    "files": {
-      "description": "Required to save the covers",
-      "type": "io.cozy.files"
+    "bills": {
+      "description": "Required to save the bills data",
+      "type": "io.cozy.bills"
     },
     "accounts": {
       "description": "Required to get the account's data",
