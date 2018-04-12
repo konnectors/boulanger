@@ -4,9 +4,7 @@ const {
   BaseKonnector,
   requestFactory,
   log,
-  saveBills,
-  saveFiles,
-  addData
+  saveBills
 } = require('cozy-konnector-libs')
 let request = requestFactory()
 const jar = request.jar()
@@ -16,12 +14,10 @@ request = requestFactory({
   //debug: true
 })
 
-const baseUrl = 'https://www.boulanger.com/'
-const loginUrl = baseUrl + 'webapp/wcs/stores/servlet/BLAuthentication'
+const baseUrl = 'https://www.boulanger.com/webapp/wcs/stores/servlet/'
+const loginUrl = baseUrl + 'BLAuthentication'
 const billsUrl =
-  baseUrl +
-  'webapp/wcs/stores/servlet/BLAccountOrdersHistoryCmd?purchase=allYear&store=store-site'
-const downloadUrl = baseUrl + 'webapp/wcs/stores/servlet/'
+  baseUrl + 'BLAccountOrdersHistoryCmd?purchase=allYear&store=store-site'
 
 module.exports = new BaseKonnector(start)
 
@@ -49,26 +45,28 @@ function getList() {
 function parseList($) {
   log('info', 'Parsing bills urls...')
   // Get a list of interesting b block (amount and date)
-  datas = Array.from(
+  const datas = Array.from(
     $('.order-head b').map((index, element) => {
       return $(element)
         .text()
         .trim()
     })
   )
-  console.log(datas)
   return Array.from(
     $('.verifyCredentials').map((index, element) => {
-      const link = downloadUrl + $(element).attr('href')
+      const link = baseUrl + $(element).attr('href')
       const number = $(element)
         .attr('href')
         .match('=(.+?)$')[1]
+      const amount = datas[index * 2 + 1].replace(/\s/g, '')
+      const date = moment(datas[index * 2], 'L')
       return {
         fileurl: link,
-        filename: number + '.pdf', //TODO file name ?
+        filename:
+          date.format('YYYY-MM-DD') + '_' + amount + '_' + number + '.pdf',
         vendor: 'Boulanger',
-        date: moment(datas[index * 2], 'LL').toDate(),
-        amount: datas[index * 2 + 1],
+        date: date.toDate(),
+        amount: parseFloat(amount.replace('€', '').replace(',', '.')),
         requestOptions: {
           jar: jar // Cookie WP_PERSITENT (long version) mandatory
         }
@@ -87,5 +85,5 @@ function authenticate(email, password) {
       rememberMe: true,
       reLogonURL: 'BLAuthenticationView&storeId=10001' // Needed for getting WP_PERSISTENT cookie
     }
-  }) // .catch(err => { })   ?
+  }) // .catch(err => {})   ?
 }
