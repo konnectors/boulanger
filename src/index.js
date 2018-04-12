@@ -2,6 +2,7 @@ const {
   BaseKonnector,
   requestFactory,
   log,
+  saveBills,
   saveFiles,
   addData
 } = require('cozy-konnector-libs')
@@ -23,7 +24,11 @@ module.exports = new BaseKonnector(start)
 
 function start(fields) {
   log('info', 'Authenticating ...')
-  return authenticate(fields.email, fields.password).then(getList)
+  return authenticate(fields.email, fields.password)
+    .then(getList)
+    .then(entries => {
+      return saveFiles(entries, fields)
+    })
 }
 
 function getList() {
@@ -35,8 +40,25 @@ function getList() {
 
 function parseList($) {
   log('info', 'Parsing bills urls...')
-  console.log(Array.from($('#verifyCredentials')))
-  return 'aa'
+  datas = Array.from(
+    $('.order-head b').map((index, element) => {
+      return $(element)
+        .text()
+        .trim()
+    })
+  )
+  return Array.from(
+    $('.verifyCredentials').map((index, element) => {
+      const link =
+        baseUrl + 'webapp/wcs/stores/servlet/' + $(element).attr('href')
+      const number = $(element)
+        .attr('href')
+        .match('=(.+?)$')[1]
+      return { fileurl: link, filename: number + '.pdf', jar: jar }
+    })
+  )
+  //  console.log(Array.from(`a[class="verifyCredentials"]`)))
+  //  console.log($.html())
 }
 
 function authenticate(email, password) {
@@ -45,7 +67,9 @@ function authenticate(email, password) {
     uri: loginUrl,
     form: {
       'email.value': email,
-      'password.value': password
+      'password.value': password,
+      rememberMe: true,
+      reLogonURL: 'BLAuthenticationView&storeId=10001'
     }
-  }) // .catch( ?
+  }) // .catch(err => { })   ?
 }
