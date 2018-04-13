@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "name": "Boulanger",
-  "type": "io.cozy.bills",
+  "type": "node",
   "slug": "boulanger",
   "description": "Konnector for the retailer Boulanger",
   "source": "git://github.com/konnectors/boulanger.git",
