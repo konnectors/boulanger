@@ -29,7 +29,7 @@ function start(fields) {
     .then(entries => {
       return saveBills(entries, fields, {
         timeout: Date.now() + 60 * 1000,
-        identifiers: ['boulanger'],
+        identifiers: ['boulanger']
       })
     })
 }
