@@ -1,5 +1,3 @@
-const moment = require('moment')
-moment.locale('fr')
 const {
   BaseKonnector,
   requestFactory,
@@ -14,6 +12,8 @@ request = requestFactory({
   cheerio: true,
   jar: jar
 })
+const moment = require('moment')
+moment.locale('fr')
 
 const baseUrl = 'https://www.boulanger.com/webapp/wcs/stores/servlet/'
 const loginUrl = baseUrl + 'BLAuthentication'
@@ -30,8 +30,6 @@ function start(fields) {
       return saveBills(entries, fields, {
         timeout: Date.now() + 60 * 1000,
         identifiers: ['boulanger'],
-        dateDelta: 12,
-        amountDelta: 5
       })
     })
 }
