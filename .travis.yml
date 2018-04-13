@@ -1,0 +1,27 @@
+language: node_js
+node_js:
+  - '8'
+env:
+  global:
+    # cozy-bot GITHUB_TOKEN
+    - secure: "pDSA46m361wMYGel0VsDEqXmPoz5+aIESb1vpUgFFOIu7DgDI0Zu40AKGLVIY7QxYByUMZZSYBCj7LUCXva9C+sXT+rzlUXJcDHZBlDiFcojr1KRwhth1ywRnsOJJJ/9/Mfp90DzDugtkmZ0yxlEo0jebkhU2JEDF1t15/y/jRE84uf9dRXYUaxHmGsA71KybPXlUQDSHtOZ/YfBadZmtfq+KVXpHcKp38q3DYq4mRYDXfvtRY3lqBUqHUkZ/1IEPnZVhgexrkiynISG0M9ulaF3YQ6l1FEYtXuF2nBEZE9BFCa3ZZxBOdVKl312znXlFpMfgYgkXXNDizvRv3WjGGq94Npd0h2LagpOBd8dUYF4KVnSu6yiBXT0TqbXSKGaSquZjo/oH8EnfgW8wiKLtCkkAsdDEtW4xR0Y7NqbeUgS9sHIicIdqYaJrtmbpXmKD0oY+GyHrVuTLns7FpnfENkmUq7E4srKoeEj90AlO44p9bNNCiXt43hSB2CxEFH2OMdj6VT9LnRKfnMRXxQQIiSVaI/w4Zyo11eIZ7LJn85fO0gLEmuUXMFLQpDkn80Pqm4IL993ROR3uVSeV0w4UVx4N7ztjZxvWB8Du0doJ3K6Gd7f6nsPvCkvf+GBiWw8HHyGuj8hvWTMGkb2dd9qtU3J7tZ+DnR3Y4s84vT4P3c="
+cache:
+  yarn: true
+  directories:
+    - node_modules
+script:
+  - yarn lint
+  - yarn build
+deploy:
+  - provider: script
+    repo: konnectors/boulanger
+    skip-cleanup: true
+    script: yarn deploy
+    on:
+      branch: master
+  - provider: script
+    repo: konnectors/cozy-konnector-boulanger
+    skip-cleanup: true
+    script: DEPLOY_BRANCH=latest yarn deploy
+    on:
+      branch: prod
