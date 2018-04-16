@@ -1,39 +1,107 @@
+// Force sentry DSN into environment variables
+// In the future, will be set by the stack
+process.env.SENTRY_DSN =
+  process.env.SENTRY_DSN ||
+  'https://0a734fc9bea84117bd562b823e8819e8:601dc1f6690449eca232c747daff7fac@sentry.cozycloud.cc/34'
+
 const {
   BaseKonnector,
   requestFactory,
   log,
-  saveFiles,
-  addData
+  errors,
+  saveBills
 } = require('cozy-konnector-libs')
-const request = requestFactory({ cheerio: true })
+let request = requestFactory()
+const jar = request.jar()
+request = requestFactory({
+  //debug: true,
+  cheerio: true,
+  jar: jar
+})
+const moment = require('moment')
+moment.locale('fr')
 
-const baseUrl = 'http://books.toscrape.com'
-
+const baseUrl = 'https://www.boulanger.com/webapp/wcs/stores/servlet/'
+const loginUrl = baseUrl + 'BLAuthentication'
+const billsUrl =
+  baseUrl + 'BLAccountOrdersHistoryCmd?purchase=allYear&store=store-site'
 
 module.exports = new BaseKonnector(start)
 
 function start(fields) {
-  // The BaseKonnector instance expects a Promise as return of the function
-  return request(`${baseUrl}/index.html`).then($ => {
-    // cheerio (https://cheerio.js.org/) uses the same api as jQuery (http://jquery.com/)
-    // here I do an Array.from to convert the cheerio fake array to a real js array.
-    const entries = Array.from($('article')).map(article =>
-      parseArticle($, article)
-    )
-    return addData(entries, 'com.toscrape.books').then(() =>
-      saveFiles(entries, fields)
-    )
-  })
+  log('info', 'Authenticating ...')
+  return authenticate(fields.email, fields.password)
+    .then(getList)
+    .then(entries => {
+      return saveBills(entries, fields, {
+        identifiers: ['boulanger']
+      })
+    })
 }
 
-function authenticate(login, password) {
+function getList() {
+  return request({
+    method: 'GET',
+    uri: billsUrl
+  }).then(parseList)
+}
+
+function parseList($) {
+  log('info', 'Parsing bills urls...')
+  // Get a list of interesting b block (amount and date)
+  const datas = Array.from(
+    $('.order-head b').map((index, element) => {
+      return $(element)
+        .text()
+        .trim()
+    })
+  )
+  return Array.from(
+    $('.verifyCredentials').map((index, element) => {
+      const link = baseUrl + $(element).attr('href')
+      const number = $(element)
+        .attr('href')
+        .match('=(.+?)$')[1]
+      const amount = datas[index * 2 + 1].replace(/\s/g, '')
+      const date = moment(datas[index * 2], 'L')
+      return {
+        fileurl: link,
+        filename:
+          date.format('YYYY-MM-DD') + '_' + amount + '_' + number + '.pdf',
+        vendor: 'Boulanger',
+        date: date.toDate(),
+        amount: parseFloat(amount.replace('€', '').replace(',', '.')),
+        requestOptions: {
+          jar: jar // Cookie WP_PERSITENT (long version) mandatory
+        }
+      }
+    })
+  )
+}
+
+function authenticate(email, password) {
   return request({
     method: 'POST',
     uri: loginUrl,
     form: {
-      username: login,
-      password: password
-    },
-
-
+      'email.value': email,
+      'password.value': password,
+      rememberMe: true,
+      reLogonURL: 'BLAuthenticationView&storeId=10001' // Needed for getting WP_PERSISTENT cookie
+    }
+  }).catch(err => {
+    if (err.statusCode === 500) {
+      if (
+        err.error &&
+        err.error.listeMessages &&
+        err.error.listeMessages.length &&
+        err.error.listeMessages[0].contenu
+      ) {
+        log('error', err.error.listeMessages[0].contenu)
+      }
+      throw new Error(errors.LOGIN_FAILED)
+    } else {
+      throw err
+    }
+  })
 }
