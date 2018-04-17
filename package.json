@@ -28,7 +28,7 @@
     "deploy": "git-directory-deploy --directory build/ --branch ${DEPLOY_BRANCH:-build} --repo=${DEPLOY_REPOSITORY:-https://$GITHUB_TOKEN@github.com/konnectors/boulanger.git}"
   },
   "dependencies": {
-    "cozy-konnector-libs": "4.1.5",
+    "cozy-konnector-libs": "4.1.6",
     "cheerio": "1.0.0-rc.2",
     "moment": "2.22.0"
   },
