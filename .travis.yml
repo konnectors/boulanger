@@ -4,7 +4,10 @@ node_js:
 env:
   global:
     # cozy-bot GITHUB_TOKEN
+    # to generate yours : travis encrypt GITHUB_TOKEN=<your_GITHUB_TOKEN>
     - secure: "HpQcblizdzKQ4M1eg6IYLenw6hHNXSdsI7AIdKPQR+aYm0aSt9E9tZbUpu5xBCBiw5M5U4ea+zrgmM8ZNzzybSqQi1n07N+lH9+xROhiYCE6lRuqrsozQKe5Oi7Xet4TrsUdOs1CC0ueOieRdb4h4AXiBpomLBpTyfK1EwtXHhtJo0OfA6vpUEfT4baRd5ys8KGcwwAk5UrBbPGRXScsCCZSWhPLSw2oWqdIlUdtayAelJkdJVFJPjjqpm6vByhn04POxL5AsgRmm1YJLtbT+QvuTW/rWNg5/YHb2qzjVdQyJzxbbP/obZ/KnhcP/mJ/jXqwU7NIrS+zcb935D4SZ9QJw7AzromjPUL6RkhAw4MQZg3YgswEfZcojWgVt6ueKGpSk5OccL8wwePaoil2n2pgmktgrLQu23BUiIRCvazkcLDxVG1DKcKk1D3M5UNTxJ8IQ4LzKIJvMvjynfa9wq7KVL6JtgVlMuZah07LtTaWVK7tw4dH2OA5rYmGQ66eXXES29UAH8oJTwYHVQefJe/ru5AdZcjCvZuA6jS5sUBZYqhjq8P8osr3RmfhE4IFEJo4/n9dm9CzvGnYggGJpMDbkcpHhwQQcp3NWuwoxehQy6YQB3s5oS4+QhJTpn4kgx3l0ozjrNrtPp/Y+yWldJ9Rb83gbEwT7dInIU4m6K0="
+    # Cozy REGISTRY_TOKEN
+    - secure: "K8f5qNaLpOL9PPsibvRnB76L/cYRYZ0sN0xFJEWDdiHYNWPFcREcKJ05Wd532IqfWqOT4k7VuI9Dofb+j3ZEkjutXWcmmyBQfENzfJJ7YT8+HNxbbxJ8CY/UbzlhiYsLqC5tWKeyq+LfcAXd8znkZ63dUdDymJrX2aXyPbm/ou1r+0QPID1nwIX+MeZjr+sDz4bB3LmwumbgbQww21/gLchABhl9E7NYP+5qYDsvMNt0MhRAwsBI1G5/gzfO/BQRIVZKMYB1YkBq20bP3p81TPNm3K/RtsFkjk/anLx6h9ZbKp3NbwABeJM8SaIHXAsdF9H/5f2IujUpXzXRjWEUCuYthugY77miY/jsAqo5Ogpa1SE2tkPKl4bNIve+6pP10SNFsz8HiH/WfnWLQD6M5vtj/DXyHrQlRB5m0gwVtH1vWVX/TyzWNgZE4kiVB8++uaKxJ5aEKVG1mhdwup8IXtGYrd9jc60L8jBee85N10Fo+9Pk24L0WvydGs1e0agdXi6+iexqvpBE15mEFsGgTBfPVgnhBNTyrWasSxiMqQIroVt/ivQmU81Mzu45uvxAwMOPCswbV761FT3Kf9RsXbb/mheCWt8QI+k2/+FMNVZPk+uqPRPvBmH8Li9VIvNtfq0S+mq29RuzlUn4wTZHU5sOuuGR37WG+/GVX1e1C3Y="
 cache:
   yarn: true
   directories:
@@ -16,12 +19,12 @@ deploy:
   - provider: script
     repo: konnectors/boulanger
     skip-cleanup: true
-    script: yarn deploy
+    script: DEPLOY_BRANCH=build && yarn deploy && yarn cozyPublish
     on:
       branch: master
   - provider: script
     repo: konnectors/cozy-konnector-boulanger
     skip-cleanup: true
-    script: DEPLOY_BRANCH=latest yarn deploy
+    script: DEPLOY_BRANCH=latest && yarn deploy && yarn cozyPublish
     on:
       branch: prod

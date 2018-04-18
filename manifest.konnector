@@ -4,7 +4,7 @@
   "type": "konnector",
   "language": "node",
   "icon": "icon.png",
-  "slug": "boulanger",
+  "slug": "boulanger-collect",
   "source": "git://github.com/konnectors/boulanger.git",
   "editor": "Cozy",
   "vendorLink": "https://www.boulanger.com",
@@ -42,8 +42,8 @@
     }
   },
   "developer": {
-    "name": "cozy",
-    "url": "cozy.io"
+    "name": "Cozy",
+    "url": "https://cozy.io"
   },
   "langs": ["fr", "en"],
   "locales": {
