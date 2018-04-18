@@ -89,22 +89,23 @@ function authenticate(email, password) {
       rememberMe: true,
       reLogonURL: 'BLAuthenticationView&storeId=10001' // Needed for getting WP_PERSISTENT cookie
     }
-  }).then(() => {
-    log('info', 'Successfully logged in')
   })
-  .catch(err => {
-    if (err.statusCode === 500) {
-      if (
-        err.error &&
-        err.error.listeMessages &&
-        err.error.listeMessages.length &&
-        err.error.listeMessages[0].contenu
-      ) {
-        log('error', err.error.listeMessages[0].contenu)
+    .then(() => {
+      log('info', 'Successfully logged in')
+    })
+    .catch(err => {
+      if (err.statusCode === 500) {
+        if (
+          err.error &&
+          err.error.listeMessages &&
+          err.error.listeMessages.length &&
+          err.error.listeMessages[0].contenu
+        ) {
+          log('error', err.error.listeMessages[0].contenu)
+        }
+        throw new Error(errors.LOGIN_FAILED)
+      } else {
+        throw err
       }
-      throw new Error(errors.LOGIN_FAILED)
-    } else {
-      throw err
-    }
-  })
+    })
 }
