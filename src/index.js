@@ -14,7 +14,7 @@ const {
 let request = requestFactory()
 const jar = request.jar()
 request = requestFactory({
-  //debug: true,
+  // debug: true,
   cheerio: true,
   jar: jar
 })
@@ -89,7 +89,10 @@ function authenticate(email, password) {
       rememberMe: true,
       reLogonURL: 'BLAuthenticationView&storeId=10001' // Needed for getting WP_PERSISTENT cookie
     }
-  }).catch(err => {
+  }).then(() => {
+    log('info', 'Successfully logged in')
+  })
+  .catch(err => {
     if (err.statusCode === 500) {
       if (
         err.error &&
