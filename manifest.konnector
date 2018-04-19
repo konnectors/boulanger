@@ -4,10 +4,10 @@
   "type": "konnector",
   "language": "node",
   "icon": "icon.png",
-  "slug": "boulanger-collect",
+  "slug": "boulanger",
   "source": "git://github.com/konnectors/boulanger.git",
   "editor": "Cozy",
-  "vendorLink": "https://www.boulanger.com",
+  "vendor_link": "https://www.boulanger.com",
   "categories": ["shopping"],
   "fields": {
     "email": {
@@ -23,7 +23,7 @@
       }
     }
   },
-  "dataType": [
+  "data_types": [
     "bill"
   ],
   "permissions": {
