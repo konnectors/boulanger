@@ -7,43 +7,47 @@ process.env.SENTRY_DSN =
 const {
   BaseKonnector,
   requestFactory,
+  signin,
   log,
-  errors,
   saveBills
 } = require('cozy-konnector-libs')
-let request = requestFactory()
-const jar = request.jar()
-request = requestFactory({
-  // debug: true,
+const request = requestFactory({
+  //debug: true,
   cheerio: true,
-  jar: jar
+  jar: true
 })
 const moment = require('moment')
 moment.locale('fr')
 
-const baseUrl = 'https://www.boulanger.com/webapp/wcs/stores/servlet/'
-const loginUrl = baseUrl + 'BLAuthentication'
+const baseUrl = 'https://www.boulanger.com'
+const loginUrl =
+  baseUrl +
+  '/authentication?action=logon&catalogId=10001&storeId=10001&langId=-2'
 const billsUrl =
-  baseUrl + 'BLAccountOrdersHistoryCmd?purchase=allYear&store=store-site'
+  baseUrl +
+  '/webapp/wcs/stores/servlet/BLAccountOrdersHistoryCmd?purchase=allYear&store=store-site'
 
 module.exports = new BaseKonnector(start)
 
-function start(fields) {
-  log('info', 'Authenticating ...')
-  return authenticate(fields.email, fields.password)
-    .then(getList)
-    .then(entries => {
-      return saveBills(entries, fields, {
-        identifiers: ['boulanger']
-      })
-    })
+async function start(fields) {
+  log('info', 'Authenticating...')
+  await authenticate(fields.email, fields.password)
+  log('info', 'Fetching bills...')
+  const entries = await getList()
+  log('debug', `${entries.length} entries found`)
+  log('info', 'Saving bills...')
+  await saveBills(entries, fields, {
+    identifiers: ['boulanger'],
+    contentType: 'application/pdf'
+  })
 }
 
-function getList() {
-  return request({
+async function getList() {
+  const $ = await request({
     method: 'GET',
     uri: billsUrl
-  }).then(parseList)
+  })
+  return parseList($)
 }
 
 function parseList($) {
@@ -58,7 +62,8 @@ function parseList($) {
   )
   return Array.from(
     $('.verifyCredentials').map((index, element) => {
-      const link = baseUrl + $(element).attr('href')
+      const link =
+        baseUrl + '/webapp/wcs/stores/servlet/' + $(element).attr('href')
       const number = $(element)
         .attr('href')
         .match('=(.+?)$')[1]
@@ -70,42 +75,32 @@ function parseList($) {
           date.format('YYYY-MM-DD') + '_' + amount + '_' + number + '.pdf',
         vendor: 'Boulanger',
         date: date.toDate(),
-        amount: parseFloat(amount.replace('€', '').replace(',', '.')),
-        requestOptions: {
-          jar: jar // Cookie WP_PERSITENT (long version) mandatory
-        }
+        amount: parseFloat(amount.replace('€', '').replace(',', '.'))
       }
     })
   )
 }
 
-function authenticate(email, password) {
-  return request({
-    method: 'POST',
-    uri: loginUrl,
-    form: {
+async function authenticate(email, password) {
+  // Auth return 302 if OK, and 200 with body if not
+  await signin({
+    url: loginUrl,
+    formSelector: 'form[name="BLAuthenticationForm"]',
+    formData: {
       'email.value': email,
-      'password.value': password,
-      rememberMe: true,
-      reLogonURL: 'BLAuthenticationView&storeId=10001' // Needed for getting WP_PERSISTENT cookie
+      'password.value': password
+    },
+    validate: (statusCode, $) => {
+      // Find info about profil to check login
+      if (
+        $('dt[class="off"]')
+          .first()
+          .text() == 'Mon profil'
+      ) {
+        return true
+      } else {
+        return false
+      }
     }
   })
-    .then(() => {
-      log('info', 'Successfully logged in')
-    })
-    .catch(err => {
-      if (err.statusCode === 500) {
-        if (
-          err.error &&
-          err.error.listeMessages &&
-          err.error.listeMessages.length &&
-          err.error.listeMessages[0].contenu
-        ) {
-          log('error', err.error.listeMessages[0].contenu)
-        }
-        throw new Error(errors.LOGIN_FAILED)
-      } else {
-        throw err
-      }
-    })
 }
