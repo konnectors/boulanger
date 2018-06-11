@@ -1,6 +1,6 @@
 {
   "name": "cozy-konnector-boulanger",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Fetch your Boulanger bills",
   "repository": {
     "type": "git",
