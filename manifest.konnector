@@ -84,5 +84,6 @@
       }
     }
   },
-  "banksTransactionRegExp": "\\bboulanger\\b"
+  "banksTransactionRegExp": "\\bboulanger\\b",
+  "manifest_version": "2"
 }
