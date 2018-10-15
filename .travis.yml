@@ -1,0 +1,41 @@
+language: node_js
+node_js:
+- '8'
+env:
+  global:
+  - GH_USER_EMAIL="travis@example.org"
+  - GH_USER_NAME="cozy-bot"
+  - DEPLOY_REPOSITORY="git@github.com:konnectors/boulanger.git"
+  - secure: lq5B2bK/PyWI/Kzq59Ij6k/UGNzDnBU1yCNaBextSZtZiaRelGaxhDaiN1/HohVPRBAsOdMTaNH69bMSdAUSsZGy5iVa2Cr8Dk0UMInH6JG2TqzFpuoZsSfv09enUIP7Hf7eUC/GfwzQxowCRCksIZOMROFA0ZdZVEvpUaJqXT49i6PBOQhVUhrdwZT0JvtpFbDxfR/kCl+6XDbmbmUXZwr8ZUZoy0K2EwI29c6AMdZxZkyH2P7vy3+Vh/+2Z5wNvxsrLkDm6b07Uu5ajEtxnugjc9bl/W2HiizaFVvsm0/IQsx7+KVZnufx12Nz9fnaVfNg4F4E9cLWYiujht9FZKxuV0YHor2TSNCkXGnLNpols0XgGoOX/3Z+Fhbbp7ff+E0gQ4x2KubWmVTWsLrsI9cb4JwJNixhYmdN8vikfjG6f2EjaGoprvy+/KzWXDTjfntBckrkf3t5uGh5oCdjjUNnQwK7clOQNgIMnn7rvPpFifxp3oK0dXrJ2dgN2Jzr2pP0n9J+pBACsn8czAo2T/Q0UhEHxrYd4Uxt6XvG4fAfBh1QfCXfNBPL3DyQfnN4rdr1oQE3GHAMNR0byZT2f78WcQAlQlka10qqXvnsRlFVG39Y9pc39DfpxJFvfUASOWVxH7zUl/4eT+IG9RiVkLwlGPJG60zFyACqNKGlpC4=
+cache:
+  yarn: true
+  directories:
+  - node_modules
+branches:
+  except:
+  - build
+  - build-debug
+script:
+- yarn lint
+- yarn build
+# - yarn run check
+deploy:
+- provider: script
+  skip-cleanup: true
+  script: DEPLOY_BRANCH=build yarn deploy && yarn cozyPublish
+  on:
+    branch: master
+- provider: script
+  skip-cleanup: true
+  script: DEPLOY_BRANCH=build yarn deploy && yarn cozyPublish
+  on:
+    tags: true
+before_install:
+- openssl aes-256-cbc -K $encrypted_7b91a7b81823_key -iv $encrypted_7b91a7b81823_iv
+  -in github_deploy_key.enc -out /tmp/github_deploy_key -d
+- eval "$(ssh-agent -s)"
+- chmod 600 /tmp/github_deploy_key
+- ssh-add /tmp/github_deploy_key
+after_deploy:
+- rm /tmp/github_deploy_key
+- ssh-add -D
