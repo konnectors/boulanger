@@ -12,7 +12,7 @@ const {
   saveBills
 } = require('cozy-konnector-libs')
 const request = requestFactory({
-  //debug: true,
+  // debug: true,
   cheerio: true,
   jar: true
 })
@@ -91,16 +91,7 @@ async function authenticate(email, password) {
       'password.value': password
     },
     validate: (statusCode, $) => {
-      // Find info about profil to check login
-      if (
-        $('dt[class="off"]')
-          .first()
-          .text() == 'Mon profil'
-      ) {
-        return true
-      } else {
-        return false
-      }
+      return !$('div.mp.login').length
     }
   })
 }
