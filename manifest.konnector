@@ -5,7 +5,7 @@
   "language": "node",
   "icon": "icon.png",
   "slug": "boulanger",
-  "source": "git://github.com/konnectors/boulanger.git",
+  "source": "git@github.com:konnectors/boulanger.git",
   "editor": "Cozy Cloud",
   "vendor_link": "https://www.boulanger.com",
   "categories": [
