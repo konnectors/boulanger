@@ -34,12 +34,14 @@ async function start(fields) {
   await authenticate(fields.email, fields.password)
   log('info', 'Fetching bills...')
   const entries = await getList()
-  log('debug', `${entries.length} entries found`)
-  log('info', 'Saving bills...')
-  await saveBills(entries, fields, {
-    identifiers: ['boulanger'],
-    contentType: 'application/pdf'
-  })
+  if (entries) {
+    log('debug', `${entries.length} entries found`)
+    log('info', 'Saving bills...')
+    await saveBills(entries, fields, {
+      identifiers: ['boulanger'],
+      contentType: 'application/pdf'
+    })
+  }
 }
 
 async function getList() {
@@ -51,6 +53,11 @@ async function getList() {
 }
 
 function parseList($) {
+  if ($.text().includes("Vous n'avez pas réalisé d'achat.")) {
+    log('warn', "Vous n'avez pas réalisé d'achat")
+    return false
+  }
+
   log('info', 'Parsing bills urls...')
   // Get a list of interesting b block (amount and date)
   const datas = Array.from(
