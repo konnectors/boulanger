@@ -68,7 +68,7 @@ function parseList($) {
     })
   )
   return Array.from(
-    $('.verifyCredentials').map((index, element) => {
+    $('.verifyCredentials[href]').map((index, element) => {
       const link =
         baseUrl + '/webapp/wcs/stores/servlet/' + $(element).attr('href')
       const number = $(element)
