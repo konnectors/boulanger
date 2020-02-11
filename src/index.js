@@ -9,12 +9,20 @@ const {
   requestFactory,
   signin,
   log,
-  saveBills
+  saveBills,
+  scrape
 } = require('cozy-konnector-libs')
 const request = requestFactory({
   // debug: true,
   cheerio: true,
-  jar: true
+  jar: true,
+  userAgent:
+    'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0',
+  headers: {
+    Accept:
+      'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language': 'fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3'
+  }
 })
 const moment = require('moment')
 moment.locale('fr')
@@ -38,8 +46,13 @@ async function start(fields) {
     log('debug', `${entries.length} entries found`)
     log('info', 'Saving bills...')
     await saveBills(entries, fields, {
-      identifiers: ['boulanger'],
-      contentType: 'application/pdf'
+      requestInstance: request,
+      contentType: 'application/pdf',
+      linkBankOperations: false,
+      sourceAccount: this.accountId,
+      sourceAccountIdentifier: fields.email,
+      fileIdAttributes: ['vendorRef'],
+      validateFileContent: true
     })
   }
 }
@@ -59,38 +72,67 @@ function parseList($) {
   }
 
   log('info', 'Parsing bills urls...')
-  // Get a list of interesting b block (amount and date)
-  const datas = Array.from(
-    $('.order-head b').map((index, element) => {
-      return $(element)
-        .text()
-        .trim()
-    })
+
+  const result = scrape(
+    $,
+    {
+      vendorRef: '.number > b',
+      url1: {
+        sel: '.verifyCredentials',
+        attr: 'data-modal-url',
+        parse: url =>
+          url
+            ? `${baseUrl}/webapp/wcs/stores/servlet/${url.replace(
+                'DisplayStoreSequencesFacturePDF',
+                'DisplayStoreFacturePDF'
+              )}&sequence=001`
+            : null
+      },
+      url2: {
+        sel: '.verifyCredentials',
+        attr: 'href',
+        parse: url =>
+          url ? `${baseUrl}/webapp/wcs/stores/servlet/${url}` : null
+      },
+      info: {
+        sel: '.order-head > .infos-purchase b',
+        fn: els =>
+          Array.from($(els)).map(el =>
+            $(el)
+              .text()
+              .trim()
+          )
+      }
+    },
+    '.order-merchant'
   )
-  return Array.from(
-    $('.verifyCredentials[href]').map((index, element) => {
-      const link =
-        baseUrl + '/webapp/wcs/stores/servlet/' + $(element).attr('href')
-      const number = $(element)
-        .attr('href')
-        .match('=(.+?)$')[1]
-      const amount = datas[index * 2 + 1].replace(/\s/g, '')
-      const date = moment(datas[index * 2], 'L')
+    .filter(doc => doc.url1 || doc.url2)
+    .map(doc => {
+      const date = moment(doc.info[0], 'L')
+      const amount = doc.info[1].replace(/\s/g, '')
       return {
-        fileurl: link,
-        filename:
-          date.format('YYYY-MM-DD') + '_' + amount + '_' + number + '.pdf',
+        vendorRef: doc.vendorRef,
         vendor: 'Boulanger',
+        fileurl: doc.url1 || doc.url2,
         date: date.toDate(),
-        amount: parseFloat(amount.replace('€', '').replace(',', '.'))
+        amount: parseFloat(amount.replace('€', '').replace(',', '.')),
+        filename:
+          date.format('YYYY-MM-DD') +
+          '_' +
+          amount +
+          '_' +
+          doc.vendorRef +
+          '.pdf'
       }
     })
-  )
+
+  return result
 }
 
 async function authenticate(email, password) {
   // Auth return 302 if OK, and 200 with body if not
   await signin({
+    requestInstance: request,
     url: loginUrl,
     formSelector: 'form[name="BLAuthenticationForm"]',
     formData: {
