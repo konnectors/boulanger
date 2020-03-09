@@ -38,7 +38,7 @@ const billsUrl =
 module.exports = new BaseKonnector(start)
 
 async function start(fields) {
-  if(!fields.email) {
+  if (!fields.email) {
     log('warn', 'Email is needed, maybe a login is provided, check it')
     throw 'LOGIN_FAILED'
   }
