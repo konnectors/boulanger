@@ -3,6 +3,11 @@
 process.env.SENTRY_DSN =
   process.env.SENTRY_DSN ||
   'https://0a734fc9bea84117bd562b823e8819e8:601dc1f6690449eca232c747daff7fac@sentry.cozycloud.cc/34'
+const secrets = JSON.parse(process.env.COZY_PARAMETERS || '{}').secret
+if (secrets && secrets.proxyUrl) {
+  process.env.http_proxy = secrets.proxyUrl
+  process.env.https_proxy = secrets.proxyUrl
+}
 
 const {
   BaseKonnector,
@@ -17,7 +22,8 @@ const request = requestFactory({
   cheerio: true,
   jar: true,
   userAgent:
-    'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0',
+  // Old userAgent 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
   headers: {
     Accept:
       'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -38,7 +44,7 @@ const billsUrl =
 module.exports = new BaseKonnector(start)
 
 async function start(fields) {
-  if(!fields.email) {
+  if (!fields.email) {
     log('warn', 'Email is needed, maybe a login is provided, check it')
     throw 'LOGIN_FAILED'
   }
