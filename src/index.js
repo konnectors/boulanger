@@ -12,22 +12,19 @@ if (secrets && secrets.proxyUrl) {
 const {
   BaseKonnector,
   requestFactory,
-  signin,
   log,
-  saveBills,
   scrape
 } = require('cozy-konnector-libs')
 const request = requestFactory({
   // debug: true,
   cheerio: true,
   jar: true,
-  userAgent:
-  // Old userAgent 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
   headers: {
     Accept:
       'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    'Accept-Language': 'fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3'
+    'Accept-Language': 'fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3',
+    'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36'
   }
 })
 const moment = require('moment')
@@ -49,17 +46,15 @@ async function start(fields) {
     throw 'LOGIN_FAILED'
   }
   log('info', 'Authenticating...')
-  await authenticate(fields.email, fields.password)
+  await authenticate.bind(this)(fields.email, fields.password)
   log('info', 'Fetching bills...')
   const entries = await getList()
   if (entries) {
     log('debug', `${entries.length} entries found`)
     log('info', 'Saving bills...')
-    await saveBills(entries, fields, {
-      requestInstance: request,
+    await this.saveBills(entries, fields, {
       contentType: 'application/pdf',
       linkBankOperations: false,
-      sourceAccount: this.accountId,
       sourceAccountIdentifier: fields.email,
       fileIdAttributes: ['vendorRef'],
       validateFileContent: true
@@ -141,8 +136,7 @@ function parseList($) {
 
 async function authenticate(email, password) {
   // Auth return 302 if OK, and 200 with body if not
-  await signin({
-    requestInstance: request,
+  await this.signin({
     url: loginUrl,
     formSelector: 'form[name="BLAuthenticationForm"]',
     formData: {
