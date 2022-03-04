@@ -37,6 +37,7 @@
     "travisDeployKey": "./bin/generate_travis_deploy_key"
   },
   "dependencies": {
+    "base64url": "^3.0.1",
     "cheerio": "1.0.0-rc.10",
     "cozy-konnector-libs": "4.51.0",
     "moment": "2.29.1"
